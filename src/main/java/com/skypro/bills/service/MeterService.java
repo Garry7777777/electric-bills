@@ -6,7 +6,6 @@ import com.skypro.bills.model.*;
 import com.skypro.bills.repository.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -32,7 +31,7 @@ public class MeterService {
 
     public MeterDTO getMeter( String serialNumber) {
         var meter =  meterRepository.findById(serialNumber)
-                .orElseThrow(ValueNotFoundException::new);
+                                    .orElseThrow(ValueNotFoundException::new);
         var meterDTO = new MeterDTO();
         meterDTO.setSerialNumber(meter.getSerialNumber());
         meterDTO.setLastIndication(getLastIndicationBySerial(serialNumber));
@@ -42,10 +41,7 @@ public class MeterService {
     public ElectricityMeter checkIndication( String serialNumber, int newIndication){
         var meter =  meterRepository.findById(serialNumber)
                                     .orElseThrow(ValueNotFoundException::new);
-        var lastIndication = indicationRepository
-                .getFirstByElectricityMeter_SerialNumberOrderBySendingDateDesc(serialNumber)
-                .orElse(new Indication());
-        if (lastIndication.getIndication() > newIndication) throw new  IncorrectValueException();
+        if (getLastIndicationBySerial(serialNumber) > newIndication) throw new IncorrectValueException();
         return meter;
     }
 
