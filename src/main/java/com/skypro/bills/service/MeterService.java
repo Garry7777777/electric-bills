@@ -13,10 +13,6 @@ import java.util.UUID;
 @Service
 public class MeterService {
 
-    //TODO: Стоит сделать это свойство конфигурируемым чере application.properties
-    // -DONE
-    @Value("${app.info.priceForKW}")
-    private static double priceForKW;
 
     @Autowired
     MeterRepository  meterRepository;
@@ -30,50 +26,18 @@ public class MeterService {
         }
 
     public MeterDTO getMeter( String serialNumber) {
-        var meter =  meterRepository.findById(serialNumber)
+        var meter =  meterRepository.findUseSerialNumber(serialNumber)
                                     .orElseThrow(ValueNotFoundException::new);
-        var meterDTO = new MeterDTO();
-        meterDTO.setSerialNumber(meter.getSerialNumber());
-        meterDTO.setLastIndication(getLastIndicationBySerial(serialNumber));
-        return meterDTO;
+        return new MeterDTO(meter.getSerialNumber(),meter.getIndication());
     }
 
-    public ElectricityMeter checkIndication( String serialNumber, int newIndication){
-        var meter =  meterRepository.findById(serialNumber)
-                                    .orElseThrow(ValueNotFoundException::new);
-        if (getLastIndicationBySerial(serialNumber) > newIndication) throw new IncorrectValueException();
-        return meter;
+    public MeterDTO setIndication( String serialNumber, int newIndication){
+        var meterDTO = getMeter(serialNumber);
+        if (meterDTO.getLastIndication() > newIndication) throw new IncorrectValueException();
+        indicationRepository.save(new Indication
+                (UUID.randomUUID().toString(), newIndication, Instant.now(), meterDTO.toMeter()));
+        return new MeterDTO(meterDTO.getSerialNumber(), newIndication);
     }
-
-    public MeterDTO setIndication(Integer newIndication, ElectricityMeter meter){
-        var indication = new Indication();
-        indication.setIndication(newIndication);
-        indication.setId(UUID.randomUUID().toString());
-        indication.setSendingDate(Instant.now());
-        indication.setElectricityMeter(meter);
-        meter.getIndications().add(indication);
-        meterRepository.save(meter);
-        return new MeterDTO(meter.getSerialNumber(), newIndication);
-    }
-
-    public BalanceDTO pay(String serialNumber, PaymentDTO paymentDTO) {
-        var meter = meterRepository.findById(serialNumber).orElseThrow(ValueNotFoundException::new);
-        if (paymentDTO != null) {
-            meter.setBalance(meter.getBalance() + paymentDTO.getAmount());
-            meterRepository.save(meter);
-        }
-        //Подсчитываем баланс - берем последние показания счетчика и умножаем на стоимость,
-        // далее вычитаем из положенных на счетчик средств
-        double balance = meter.getBalance() - getLastIndicationBySerial(serialNumber) * priceForKW;
-        return new BalanceDTO(serialNumber, balance);
-    }
-
-    protected Integer getLastIndicationBySerial(String serialNumber) {
-        return indicationRepository
-                .getFirstByElectricityMeter_SerialNumberOrderBySendingDateDesc(serialNumber)
-                .orElse(new Indication()).getIndication();
-    }
-
 }
 
 

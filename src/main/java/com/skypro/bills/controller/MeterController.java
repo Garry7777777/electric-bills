@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-//TODO: Хорошо бы задокументировать АПИ :-(
+//TO DO: Хорошо бы задокументировать АПИ :-(
 // -DONE
 @Tag(name="Контроллер счётчика", description="работа с данными счётчика")
 @RestController
@@ -50,8 +50,7 @@ public class MeterController {
           int indication) {
 
     if (indication < 0)  return ResponseEntity.badRequest().build();
-    var meter = meterService.checkIndication(serial, indication);
-    return ResponseEntity.ok(meterService.setIndication(indication, meter));
+    return ResponseEntity.ok(meterService.setIndication(serial, indication));
   }
 
 }

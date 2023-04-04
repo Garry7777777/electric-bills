@@ -1,16 +1,14 @@
 package com.skypro.bills.controller;
 
-import com.skypro.bills.dto.BalanceDTO;
-import com.skypro.bills.dto.PaymentDTO;
-import com.skypro.bills.service.MeterService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
+import com.skypro.bills.dto.*;
+import com.skypro.bills.service.BillingService;
+import io.swagger.v3.oas.annotations.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-//TODO: Хорошо бы задокументировать АПИ :-(
+//TO DO: Хорошо бы задокументировать АПИ :-(
 // -DONE
 @Tag(name="Контроллер биллинга", description="создание платежа и получение биллинга")
 @RestController
@@ -18,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class BillingController {
 
   @Autowired
-  MeterService meterService;
+  BillingService billingService;
 
   @Operation(summary = "Отправка платежа", description = "Производит пополнение баланса")
   @PostMapping("/{serial}")
@@ -30,7 +28,7 @@ public class BillingController {
 
     if (paymentDTO.getAmount() <= 0 || serial.isEmpty() )
                           return ResponseEntity.badRequest().build();
-    return ResponseEntity.ok( meterService.pay(serial,paymentDTO)) ;
+    return ResponseEntity.ok( billingService.pay(serial,paymentDTO)) ;
   }
 
   @Operation(summary = "Получение биллинга", description = "Получает инфомацию по балансу")
@@ -40,6 +38,6 @@ public class BillingController {
           String serial) {
 
     if ( serial.isEmpty() ) return ResponseEntity.badRequest().build();
-    return ResponseEntity.ok( meterService.pay(serial, null));
+    return ResponseEntity.ok( billingService.pay(serial, null));
   }
 }

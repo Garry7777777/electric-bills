@@ -1,11 +1,14 @@
 package com.skypro.bills.model;
 
-import lombok.Data;
+import lombok.*;
 import jakarta.persistence.*;
+
 import java.time.Instant;
 
 @Data
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 public class Indication {
 
   @Id
